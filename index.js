@@ -11,7 +11,11 @@ app.get('/', function(clientReq, clientRes) {
   console.log(chalk.yellow('Parent received request from client'))
 
   request({ url: blogUrl }, function (err, res, xmlBlogFeedString) {
-    console.log('Parent received response from BlogFeed')
+    if (err) {
+      clientRes.send('Error while trying to get Blog Feed.', error)
+      return
+    }
+    console.log(`Parent received response from BlogFeed`)
 
     var child = fork(__dirname + '/child.js')
 
@@ -21,20 +25,19 @@ app.get('/', function(clientReq, clientRes) {
       console.log('Received answer from ', child.pid)
 
       clientRes.send(blogFeedJsonParsed)
+
       child.kill()
       console.log(chalk.red('killed', child.pid))
     })
 
-    child.on('error', function (error) {
-      // The process could not be spawned, or
-      // The process could not be killed, or
-      // Sending a message to the child process failed.
-      console.log('Error for child: ' + child.pid, error)
+    child.on('exit', function (code, signal) {
+      console.log(`Exit for child ${child.pid} with code ${code} and signal ${signal}`)
       child.kill()
     })
 
-    child.on('exit', function (code, signal) {
-      console.log('Exit for child ' + child.pid + ' with code ' + code + ' and signal ' + signal)
+    child.on('error', function (error) {
+      // The process could not be spawned, or the process could not be killed, or sending a message to the child process failed.
+      console.log(chalk.bgRed(`Error for child: ${child.pid}`), error)
       child.kill()
     })
 
