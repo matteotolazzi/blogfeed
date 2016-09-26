@@ -3,7 +3,7 @@ var request = require('request')
 var chalk = require('chalk')
 var fork = require('child_process').fork
 
-const blogUrl = 'http://insideout.topshop.com/fashion-week-1/feed?category=fashion-week-1'
+const blogUrl = '...'
 
 var app = express()
 
